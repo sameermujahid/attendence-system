@@ -24,7 +24,7 @@ recognized_names = {}
 deadline = "09:00"  # Default deadline time
 
 # Brevo API Configuration
-api_key = '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'
+api_key = 'YOUR_APIKEY'
 configuration = sib_api_v3_sdk.Configuration()
 configuration.api_key['api-key'] = api_key
 
@@ -32,8 +32,8 @@ configuration.api_key['api-key'] = api_key
 # Function to send email notification using Brevo
 def send_brevo_notification(subject, content):
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-    sender = {"name": "Attendance System", "email": "sameermujahid7777@gmail.com"}
-    to = [{"email": "sameermujahid7777@gmail.com"}]
+    sender = {"name": "Attendance System", "email": "yourmail@gmail.com"}
+    to = [{"email": "yourmail@gmail.com"}]
     html_content = f"<html><body>{content}</body></html>"
 
     # Create email
