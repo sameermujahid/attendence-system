@@ -71,8 +71,8 @@ To set up the Attendance System on your local machine, follow these instructions
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
-   cd attendance-system-yolov8
+   git clone https://github.com/sameermujahid/attendence-system.git
+   cd attendance-system
    ```
 
 2. **Create a Virtual Environment** (optional but recommended):
