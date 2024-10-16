@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #e0e1dd;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #415a77;
+            margin-bottom: 20px;
+            width: 300px;
+            font-size: 1rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        li {
+            border-radius: 8px;
+            padding: 15px;
+            margin: 5px 0;
+            transition: background 0.3s;
+        }
+
+        .on-time {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .late {
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        button {
+            background-color: #415a77;
+            color: #e0e1dd;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            margin: 10px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #778da9;
+            transform: translateY(-2px);
+        }
+
+        video {
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance System</h1>
+    <h2>Video Feed</h2>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="sendAttendanceButton">Send Attendance</button>
+    <button id="exportAttendanceButton">Export Attendance</button>
+    <h2>Attendance List:</h2>
+    <ul id="attendanceList"></ul>
+
+    <script>
+        // Access the user's webcam
+        const video = document.getElementById("video");
+
+        navigator.mediaDevices.getUserMedia({
+            video: true
+        }).then(stream => {
+            video.srcObject = stream;
+        }).catch(err => {
+            console.error("Error accessing webcam: ", err);
+        });
+
+        // Function to capture frames and send to Flask backend
+        function captureFrame() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frame = canvas.toDataURL('image/jpeg');
+
+            $.ajax({
+                url: '/process_frame',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ frame }),
+                success: function(response) {
+                    console.log('Frame processed', response);
+                    updateAttendanceList(response.recognized_names);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error processing frame:', error);
+                }
+            });
+        }
+
+        // Update attendance list on the page
+        function updateAttendanceList(attendance) {
+            const attendanceList = $('#attendanceList');
+            attendanceList.empty();
+
+            for (const [name, info] of Object.entries(attendance)) {
+                const lateClass = info.late ? 'late' : 'on-time';
+                attendanceList.append(`<li class="${lateClass}">${name} - Time: ${info.time}, Date: ${info.date}</li>`);
+            }
+        }
+
+        // Capture frames at an interval
+        setInterval(captureFrame, 3000);  // Adjust interval as needed (3000 ms = 3 seconds)
+
+        // Handle sending attendance
+        $('#sendAttendanceButton').click(function() {
+            $.post('/send_attendance', function(response) {
+                alert(response.message);
+            }).fail(function(xhr) {
+                alert('Failed to send attendance: ' + xhr.responseJSON.message);
+            });
+        });
+
+        // Handle exporting attendance
+        $('#exportAttendanceButton').click(function() {
+            $.post('/export_attendance', function(response) {
+                alert(response.message);
+            }).fail(function(xhr) {
+                alert('Failed to export attendance: ' + xhr.responseJSON.message);
+            });
+        });
+    </script>
+</body>
+</html>
