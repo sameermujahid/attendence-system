@@ -52,7 +52,7 @@ def log_attendance(name, timestamp):
 
 # Video streaming generator
 def generate_frames(camera_index):
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('http://192.168.0.110:6677/index')
     if not cap.isOpened():
         return
 
