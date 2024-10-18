@@ -5,3 +5,4 @@ pandas
 ultralytics
 sib-api-v3-sdk
 numpy
+gunicorn
